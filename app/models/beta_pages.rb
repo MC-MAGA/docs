@@ -1,16 +1,8 @@
 class BetaPages
   def self.all
     [
-      'test-analytics/rust-collectors',
-      'test-analytics/swift-collectors',
-      'test-analytics/android-collectors',
-      'test-analytics/dotnet-collectors',
-      'apis/rest-api/analytics/flaky-tests',
-      'apis/rest-api/analytics/suites',
-      'apis/rest-api/analytics/runs',
-      'apis/rest-api/analytics/tests',
-      'agent/clusters',
-      'apis/rest-api/clusters'
+      'path/page-name',
+      'path/last-page-name-in-list-without-trailing-comma'
     ]
   end
 end

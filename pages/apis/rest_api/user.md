@@ -1,6 +1,6 @@
 # User API
 
-The User API endpoint allows you to inspect details about the user account that owns the API token that is currently being used.
+The user API endpoint allows you to inspect details about the user account that owns the API token that is currently being used.
 
 
 ## Get the current user
@@ -8,7 +8,8 @@ The User API endpoint allows you to inspect details about the user account that 
 Returns basic details about the user account that sent the request.
 
 ```bash
-curl -H "Authorization: Bearer $BUILDKITE_TOKEN" "https://api.buildkite.com/v2/user"
+curl -H "Authorization: Bearer $TOKEN" \
+  -X GET "https://api.buildkite.com/v2/user"
 ```
 
 ```json

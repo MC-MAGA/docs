@@ -1,10 +1,9 @@
 # Upgrading to Buildkite Agent v2
 
->🚧 This page references the out-of-date Buildkite Agent v2.
+> 🚧 This page references the out-of-date Buildkite Agent v2.
 > For docs referencing the Buildkite Agent v3, <a href="/docs/agent/v3/upgrading">see the latest version of this document</a>.
 
 The Buildkite Agent has changed a lot in v2 but upgrade process is straight forward. We'll cover what's changed and how to upgrade to new agents.
-
 
 ## What's changed
 
@@ -12,7 +11,7 @@ The Buildkite Agent has changed a lot in v2 but upgrade process is straight forw
 * Agents can be configured with [a config file](configuration).
 * Agents register themselves with a organization-wide token, you no longer need to create them using the web.
 * Agents now have [hooks support](hooks) and there should be no reason to customize the `bootstrap.sh` file.
-* There is built-in support for containerizing builds with [Docker and Docker Compose](/docs/tutorials/docker-containerized-builds).
+* There is built-in support for containerizing builds with [Docker and Docker Compose](/docs/pipelines/tutorials/docker-containerized-builds).
 * There are [installer packages](installation) available for most systems.
 * Agents now have [meta-data](agent-meta-data).
 * Agent meta-data can be imported from EC2 tags with `--meta-data-ec2-tags`
@@ -52,12 +51,12 @@ To make installation easier we've created packages for each of the major operati
 
 ## Upgrading a 1.0 beta agent
 
-To upgrade a _Ubuntu / Debian_ 1.0 beta agent:
+To upgrade a **Ubuntu / Debian** 1.0 beta agent:
 
 * Edit `/etc/apt/sources.list.d/buildkite-agent.list` and replace the word `unstable` (or `experimental`) with `stable`
 * Run `sudo apt-get update && sudo apt-get upgrade -y buildkite-agent`
 
-To upgrade a _Red Hat / CentOS_ 1.0 beta agent:
+To upgrade a **Red Hat / CentOS** 1.0 beta agent:
 
 * Edit `/etc/yum.repos.d/buildkite-agent.repo` and replace the word `unstable` (or `experimental`) with `stable`
 * Run `sudo yum clean expire-cache && sudo yum update buildkite-agent`

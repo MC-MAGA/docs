@@ -3,18 +3,16 @@
 
 ## Build number vs build ID
 
-All builds have both an ID which is unique within the whole of Buildkite (*build ID*), and a sequential number which is unique to the pipeline (*build number*).
-
-For example build number `27` of the `Test` pipeline might have a build ID of `f62a1b4d-10f9-4790-bc1c-e2c3a0c80983`.
+All builds have a *build ID* (e.g. `01908131-7d9f-495e-a17b-80ed31276810`), which is unique within the whole of Buildkite, and a *build number* (e.g. `27`), which is unique to the pipeline. The build number is monotonically increasing but may include gaps.
 
 API requests that affect a single build accept the more human readable build number (and the organization and pipeline it belongs to), **not** the build ID:
 
-* [Get a build](#get-a-build)
-* [Cancel a build](#cancel-a-build)
-* [Rebuild a build](#rebuild-a-build)
-* [List artifacts for a build](/docs/apis/rest-api/artifacts#list-artifacts-for-a-build)
-* [List annotations for a build](/docs/apis/rest-api/annotations#list-annotations-for-a-build)
-
+- [Get a build](#get-a-build)
+- [Create a build](#create-a-build)
+- [Cancel a build](#cancel-a-build)
+- [Rebuild a build](#rebuild-a-build)
+- [List artifacts for a build](/docs/apis/rest-api/artifacts#list-artifacts-for-a-build)
+- [List annotations for a build](/docs/apis/rest-api/annotations#list-annotations-for-a-build)
 
 ## List all builds
 
@@ -23,7 +21,8 @@ If using token-based authentication the list of builds will be for the authorize
 Builds are listed in the order they were created (newest first).
 
 ```bash
-curl "https://api.buildkite.com/v2/builds"
+curl -H "Authorization: Bearer $TOKEN" \
+  -X GET "https://api.buildkite.com/v2/builds"
 ```
 
 Optional [query string parameters](/docs/api#query-string-parameters):
@@ -40,7 +39,8 @@ Returns a [paginated list](<%= paginated_resource_docs_url %>) of an organizatio
 Builds are listed in the order they were created (newest first).
 
 ```bash
-curl "https://api.buildkite.com/v2/organizations/{org.slug}/builds"
+curl -H "Authorization: Bearer $TOKEN" \
+  -X GET "https://api.buildkite.com/v2/organizations/{org.slug}/builds"
 ```
 
 Optional [query string parameters](/docs/api#query-string-parameters):
@@ -57,7 +57,8 @@ Returns a [paginated list](<%= paginated_resource_docs_url %>) of a pipeline's b
 Builds are listed in the order they were created (newest first).
 
 ```bash
-curl "https://api.buildkite.com/v2/organizations/{org.slug}/pipelines/{pipeline.slug}/builds"
+curl -H "Authorization: Bearer $TOKEN" \
+  -X GET "https://api.buildkite.com/v2/organizations/{org.slug}/pipelines/{pipeline.slug}/builds"
 ```
 
 ```json
@@ -69,6 +70,7 @@ curl "https://api.buildkite.com/v2/organizations/{org.slug}/pipelines/{pipeline.
     "web_url": "https://buildkite.com/my-great-org/my-pipeline/builds/1",
     "number": 1,
     "state": "passed",
+    "cancel_reason": "reason for a canceled build",
     "blocked": false,
     "message": "Bumping to version 0.2-beta.6",
     "commit": "abcd0b72a1e580e90712cdd9eb26d3fb41cd09c8",
@@ -89,6 +91,20 @@ curl "https://api.buildkite.com/v2/organizations/{org.slug}/pipelines/{pipeline.
         "type": "script",
         "name": ":package:",
         "step_key": "package",
+        "step": {
+          "id": "018c0f56-c87c-47e9-95ee-aa47397b4496",
+          "signature": {
+            "value": "eyJhbGciOiJFUzI1NiIsImtpZCI6InlvdSBzbHkgZG9nISB5b3UgY2F1Z2h0IG1lIG1vbm9sb2d1aW5nISJ9..m9LBvNgbzmO5JuZ4Bwoheyn7uqLf3TN1EdFwv_l_nMT2qh0_2EVs30SAEc-Ajjkq18MQk3cgU36AodLPl3_hBg",
+            "algorithm": "EdDSA",
+            "signed_fields": [
+              "command",
+              "env",
+              "matrix",
+              "plugins",
+              "repository_url"
+            ]
+          }
+        },
         "agent_query_rules": ["*"],
         "state": "passed",
         "web_url": "https://buildkite.com/my-great-org/my-pipeline/builds/1#b63254c0-3271-4a98-8270-7cfbd6c2f14e",
@@ -109,9 +125,16 @@ curl "https://api.buildkite.com/v2/organizations/{org.slug}/pipelines/{pipeline.
         "started_at": "2015-05-09T21:07:59.874Z",
         "finished_at": "2015-05-09T21:08:59.874Z",
         "retried": false,
-	"retried_in_job_id": null,
-	"retries_count": null,
-	"retry_type": null
+        "retried_in_job_id": null,
+        "retries_count": null,
+        "retry_type": null,
+        "parallel_group_index": null,
+        "parallel_group_total": null,
+        "matrix": null,
+        "cluster_id": null,
+        "cluster_url": null,
+        "cluster_queue_id": null,
+        "cluster_queue_url": null
       }
     ],
     "created_at": "2015-05-09T21:05:59.874Z",
@@ -179,7 +202,8 @@ Success response: `200 OK`
 ## Get a build
 
 ```bash
-curl "https://api.buildkite.com/v2/organizations/{org.slug}/pipelines/{pipeline.slug}/builds/{number}"
+curl -H "Authorization: Bearer $TOKEN" \
+  -X GET "https://api.buildkite.com/v2/organizations/{org.slug}/pipelines/{pipeline.slug}/builds/{number}"
 ```
 
 ```json
@@ -190,6 +214,7 @@ curl "https://api.buildkite.com/v2/organizations/{org.slug}/pipelines/{pipeline.
   "web_url": "https://buildkite.com/my-great-org/my-pipeline/builds/2",
   "number": 2,
   "state": "passed",
+  "cancel_reason": "reason for a canceled build",
   "blocked": false,
   "message": "Bumping to version 0.2-beta.6",
   "commit": "abcd0b72a1e580e90712cdd9eb26d3fb41cd09c8",
@@ -210,6 +235,20 @@ curl "https://api.buildkite.com/v2/organizations/{org.slug}/pipelines/{pipeline.
       "type": "script",
       "name": ":package:",
       "step_key": "package",
+      "step": {
+        "id": "018c0f56-c87c-47e9-95ee-aa47397b4496",
+        "signature": {
+          "value": "eyJhbGciOiJFUzI1NiIsImtpZCI6InlvdSBzbHkgZG9nISB5b3UgY2F1Z2h0IG1lIG1vbm9sb2d1aW5nISJ9..m9LBvNgbzmO5JuZ4Bwoheyn7uqLf3TN1EdFwv_l_nMT2qh0_2EVs30SAEc-Ajjkq18MQk3cgU36AodLPl3_hBg",
+          "algorithm": "EdDSA",
+          "signed_fields": [
+            "command",
+            "env",
+            "matrix",
+            "plugins",
+            "repository_url"
+          ]
+        }
+      },
       "agent_query_rules": ["*"],
       "state": "scheduled",
       "web_url": "https://buildkite.com/my-great-org/my-pipeline/builds/2#b63254c0-3271-4a98-8270-7cfbd6c2f14e",
@@ -223,7 +262,7 @@ curl "https://api.buildkite.com/v2/organizations/{org.slug}/pipelines/{pipeline.
         "id": "0b461f65-e7be-4c80-888a-ef11d81fd971",
         "graphql_id": "QWdlbnQtLS1mOTBhNzliNC01YjJlLTQzNzEtYjYxZS03OTA4ZDAyNmUyN2E=",
         "url": "https://api.buildkite.com/v2/organizations/my-great-org/agents/my-agent",
-        "web_url": "https://buildkite.com/organizations/buildkite/my-great-org/agents/0b461f65-e7be-4c80-888a-ef11d81fd971",
+        "web_url": "https://buildkite.com/organizations/my-great-org/agents/0b461f65-e7be-4c80-888a-ef11d81fd971",
         "name": "my-agent",
         "connection_state": "connected",
         "hostname": "localhost",
@@ -246,7 +285,14 @@ curl "https://api.buildkite.com/v2/organizations/{org.slug}/pipelines/{pipeline.
       "retried": false,
       "retried_in_job_id": null,
       "retries_count": null,
-      "retry_type": null
+      "retry_type": null,
+      "parallel_group_index": null,
+      "parallel_group_total": null,
+      "matrix": null,
+      "cluster_id": null,
+      "cluster_url": null,
+      "cluster_queue_id": null,
+      "cluster_queue_url": null
     }
   ],
   "created_at": "2015-05-09T21:05:59.874Z",
@@ -290,6 +336,8 @@ curl "https://api.buildkite.com/v2/organizations/{org.slug}/pipelines/{pipeline.
 > 📘 Webhook URL
 > The response only includes a webhook URL in `pipeline.provider.webhook_url` if the user has edit permissions for the pipeline. Otherwise, the field returns with an empty string.
 
+Unlike [build states](/docs/pipelines/configure/notifications#build-states) for notifications, when a build is blocked, the `state` of a build does not return the value `blocked`. Instead, the build `state` retains its last value (for example, `passed`) and the `blocked` field value will be `true`.
+
 Optional [query string parameters](/docs/api#query-string-parameters):
 
 <table>
@@ -310,7 +358,8 @@ Success response: `200 OK`
 ## Create a build
 
 ```bash
-curl -X POST "https://api.buildkite.com/v2/organizations/{org.slug}/pipelines/{pipeline.slug}/builds" \
+curl -H "Authorization: Bearer $TOKEN" \
+  -X POST "https://api.buildkite.com/v2/organizations/{org.slug}/pipelines/{pipeline.slug}/builds" \
   -H "Content-Type: application/json" \
   -d '{
     "commit": "abcd0b72a1e580e90712cdd9eb26d3fb41cd09c8",
@@ -338,6 +387,7 @@ curl -X POST "https://api.buildkite.com/v2/organizations/{org.slug}/pipelines/{p
   "web_url": "https://buildkite.com/my-great-org/my-pipeline/builds/1",
   "number": 1,
   "state": "scheduled",
+  "cancel_reason": "reason for a canceled build",
   "blocked": false,
   "message": "Testing all the things \:rocket\:",
   "commit": "abcd0b72a1e580e90712cdd9eb26d3fb41cd09c8",
@@ -357,6 +407,20 @@ curl -X POST "https://api.buildkite.com/v2/organizations/{org.slug}/pipelines/{p
       "type": "script",
       "name": ":package:",
       "step_key": "package",
+      "step": {
+        "id": "018c0f56-c87c-47e9-95ee-aa47397b4496",
+        "signature": {
+          "value": "eyJhbGciOiJFUzI1NiIsImtpZCI6InlvdSBzbHkgZG9nISB5b3UgY2F1Z2h0IG1lIG1vbm9sb2d1aW5nISJ9..m9LBvNgbzmO5JuZ4Bwoheyn7uqLf3TN1EdFwv_l_nMT2qh0_2EVs30SAEc-Ajjkq18MQk3cgU36AodLPl3_hBg",
+          "algorithm": "EdDSA",
+          "signed_fields": [
+            "command",
+            "env",
+            "matrix",
+            "plugins",
+            "repository_url"
+          ]
+        }
+      },
       "agent_query_rules": ["*"],
       "state": "scheduled",
       "web_url": "https://buildkite.com/my-great-org/my-pipeline/builds/1#b63254c0-3271-4a98-8270-7cfbd6c2f14e",
@@ -370,7 +434,7 @@ curl -X POST "https://api.buildkite.com/v2/organizations/{org.slug}/pipelines/{p
         "id": "0b461f65-e7be-4c80-888a-ef11d81fd971",
         "graphql_id": "QWdlbnQtLS1mOTBhNzliNC01YjJlLTQzNzEtYjYxZS03OTA4ZDAyNmUyN2E=",
         "url": "https://api.buildkite.com/v2/organizations/my-great-org/agents/my-agent",
-        "web_url": "https://buildkite.com/organizations/buildkite/my-great-org/agents/0b461f65-e7be-4c80-888a-ef11d81fd971",
+        "web_url": "https://buildkite.com/organizations/my-great-org/agents/0b461f65-e7be-4c80-888a-ef11d81fd971",
         "name": "my-agent",
         "connection_state": "connected",
         "hostname": "localhost",
@@ -394,7 +458,14 @@ curl -X POST "https://api.buildkite.com/v2/organizations/{org.slug}/pipelines/{p
       "retried": false,
       "retried_in_job_id": null,
       "retries_count": null,
-      "retry_type": null
+      "retry_type": null,
+      "parallel_group_index": null,
+      "parallel_group_total": null,
+      "matrix": null,
+      "cluster_id": null,
+      "cluster_url": null,
+      "cluster_queue_id": null,
+      "cluster_queue_url": null
     }
   ],
   "created_at": "2015-05-09T21:05:59.874Z",
@@ -436,7 +507,7 @@ Required [request body properties](/docs/api#request-body-properties):
 
 <table>
 <tbody>
-  <tr><th><code>commit</code></th><td>Ref, SHA or tag to be built.<br><em>Example:</em> <code>"HEAD"</code><br><em>Note:</em>Before running builds on tags, make sure your agent is <a href="/docs/integrations/github#running-builds-on-git-tags">fetching git tags</a> .
+  <tr><th><code>commit</code></th><td>Ref, SHA or tag to be built.<br><em>Example:</em> <code>"HEAD"</code><br><em>Note:</em>Before running builds on tags, make sure your agent is <a href="/docs/pipelines/source-control/github#running-builds-on-git-tags">fetching git tags</a> .
 </td></tr>
   <tr><th><code>branch</code></th><td>Branch the commit belongs to. This allows you to take advantage of your pipeline and step-level branch filtering rules.<br><em>Example:</em> <code>"main"</code></td></tr>
 </tbody>
@@ -446,14 +517,15 @@ Optional [request body properties](/docs/api#request-body-properties):
 
 <table>
 <tbody>
-  <tr><th><code>author</code></th><td>A hash with a <code>"name"</code> and <code>"email"</code> key to show who created this build.<br><em>Default value: the user making the API request</em>.</td></tr>
+  <tr><th><code>author</code></th><td>A JSON object with a <code>"name"</code> and <code>"email"</code> key to show who created this build.<br><em>Default value: the user making the API request</em>.</td></tr>
   <tr><th><code>clean_checkout</code></th><td>Force the agent to remove any existing build directory and perform a fresh checkout.<br><em>Default value:</em> <code>false</code>.</td></tr>
   <tr><th><code>env</code></th><td>Environment variables to be made available to the build.<br><em>Default value:</em> <code>{}</code>.</td></tr>
   <tr><th><code>ignore_pipeline_branch_filters</code></th><td>Run the build regardless of the pipeline's branch filtering rules. Step branch filtering rules will still apply.<br><em>Default value:</em> <code>false</code>.</td></tr>
   <tr><th><code>message</code></th><td>Message for the build.<br><em>Example:</em> <code>"Testing all the things \:rocket\:"</code></td></tr>
-  <tr><th><code>meta_data</code></th><td>A hash of meta-data to make available to the build.<br><em>Default value:</em> <code>{}</code>.</td></tr>
+  <tr><th><code>meta_data</code></th><td>A JSON object of meta-data to make available to the build.<br><em>Default value:</em> <code>{}</code>.</td></tr>
   <tr><th><code>pull_request_base_branch</code></th><td>For a pull request build, the base branch of the pull request.<br><em>Example:</em> <code>"main"</code></td></tr>
   <tr><th><code>pull_request_id</code></th><td>For a pull request build, the pull request number.<br><em>Example:</em> <code>42</code></td></tr>
+  <tr><th><code>pull_request_labels</code></th><td>For a pull request build, a JSON array of labels assigned to the pull request.<br><em>Example:</em> <code>["bug", "ui"]</code></td></tr>
   <tr><th><code>pull_request_repository</code></th><td>For a pull request build, the git repository of the pull request.<br><em>Example:</em> <code>"git://github.com/my-org/my-repo.git"</code></td></tr>
   </tbody>
 </table>
@@ -476,7 +548,8 @@ Error responses:
 Cancels the build if its state is either `scheduled`, `running`, or `failing`.
 
 ```bash
-curl -X PUT "https://api.buildkite.com/v2/organizations/{org.slug}/pipelines/{pipeline.slug}/builds/{number}/cancel"
+curl -H "Authorization: Bearer $TOKEN" \
+  -X PUT "https://api.buildkite.com/v2/organizations/{org.slug}/pipelines/{pipeline.slug}/builds/{number}/cancel"
 ```
 
 ```json
@@ -487,6 +560,7 @@ curl -X PUT "https://api.buildkite.com/v2/organizations/{org.slug}/pipelines/{pi
   "web_url": "https://buildkite.com/my-great-org/my-pipeline/builds/1",
   "number": 1,
   "state": "canceled",
+  "cancel_reason": "reason for a canceled build",
   "blocked": false,
   "message": "Bumping to version 0.2-beta.6",
   "commit": "abcd0b72a1e580e90712cdd9eb26d3fb41cd09c8",
@@ -508,6 +582,20 @@ curl -X PUT "https://api.buildkite.com/v2/organizations/{org.slug}/pipelines/{pi
       "type": "script",
       "name": ":package:",
       "step_key": "package",
+      "step": {
+        "id": "018c0f56-c87c-47e9-95ee-aa47397b4496",
+        "signature": {
+          "value": "eyJhbGciOiJFUzI1NiIsImtpZCI6InlvdSBzbHkgZG9nISB5b3UgY2F1Z2h0IG1lIG1vbm9sb2d1aW5nISJ9..m9LBvNgbzmO5JuZ4Bwoheyn7uqLf3TN1EdFwv_l_nMT2qh0_2EVs30SAEc-Ajjkq18MQk3cgU36AodLPl3_hBg",
+          "algorithm": "EdDSA",
+          "signed_fields": [
+            "command",
+            "env",
+            "matrix",
+            "plugins",
+            "repository_url"
+          ]
+        }
+      },
       "agent_query_rules": ["*"],
       "state": "scheduled",
       "web_url": "https://buildkite.com/my-great-org/my-pipeline/builds/1#b63254c0-3271-4a98-8270-7cfbd6c2f14e",
@@ -521,7 +609,7 @@ curl -X PUT "https://api.buildkite.com/v2/organizations/{org.slug}/pipelines/{pi
         "id": "0b461f65-e7be-4c80-888a-ef11d81fd971",
         "graphql_id": "QWdlbnQtLS1mOTBhNzliNC01YjJlLTQzNzEtYjYxZS03OTA4ZDAyNmUyN2E=",
         "url": "https://api.buildkite.com/v2/organizations/my-great-org/agents/my-agent",
-        "web_url": "https://buildkite.com/organizations/buildkite/my-great-org/agents/0b461f65-e7be-4c80-888a-ef11d81fd971",
+        "web_url": "https://buildkite.com/organizations/my-great-org/agents/0b461f65-e7be-4c80-888a-ef11d81fd971",
         "name": "my-agent",
         "connection_state": "connected",
         "hostname": "localhost",
@@ -545,7 +633,14 @@ curl -X PUT "https://api.buildkite.com/v2/organizations/{org.slug}/pipelines/{pi
       "retried": false,
       "retried_in_job_id": null,
       "retries_count": null,
-      "retry_type": null
+      "retry_type": null,
+      "parallel_group_index": null,
+      "parallel_group_total": null,
+      "matrix": null,
+      "cluster_id": null,
+      "cluster_url": null,
+      "cluster_queue_id": null,
+      "cluster_queue_url": null
     }
   ],
   "created_at": "2015-05-09T21:05:59.874Z",
@@ -601,7 +696,8 @@ Error responses:
 Returns the newly created build.
 
 ```bash
-curl -X PUT "https://api.buildkite.com/v2/organizations/{org.slug}/pipelines/{pipeline.slug}/builds/{number}/rebuild"
+curl -H "Authorization: Bearer $TOKEN" \
+  -X PUT "https://api.buildkite.com/v2/organizations/{org.slug}/pipelines/{pipeline.slug}/builds/{number}/rebuild"
 ```
 
 ```json
@@ -612,6 +708,7 @@ curl -X PUT "https://api.buildkite.com/v2/organizations/{org.slug}/pipelines/{pi
   "web_url": "https://buildkite.com/my-great-org/my-pipeline/builds/1",
   "number": 2,
   "state": "scheduled",
+  "cancel_reason": "reason for a canceled build",
   "blocked": false,
   "message": "Bumping to version 0.2-beta.6",
   "commit": "abcd0b72a1e580e90712cdd9eb26d3fb41cd09c8",
@@ -633,6 +730,20 @@ curl -X PUT "https://api.buildkite.com/v2/organizations/{org.slug}/pipelines/{pi
       "type": "script",
       "name": ":package:",
       "step_key": "package",
+      "step": {
+        "id": "018c0f56-c87c-47e9-95ee-aa47397b4496",
+        "signature": {
+          "value": "eyJhbGciOiJFUzI1NiIsImtpZCI6InlvdSBzbHkgZG9nISB5b3UgY2F1Z2h0IG1lIG1vbm9sb2d1aW5nISJ9..m9LBvNgbzmO5JuZ4Bwoheyn7uqLf3TN1EdFwv_l_nMT2qh0_2EVs30SAEc-Ajjkq18MQk3cgU36AodLPl3_hBg",
+          "algorithm": "EdDSA",
+          "signed_fields": [
+            "command",
+            "env",
+            "matrix",
+            "plugins",
+            "repository_url"
+          ]
+        }
+      },
       "agent_query_rules": ["*"],
       "state": "scheduled",
       "web_url": "https://buildkite.com/my-great-org/my-pipeline/builds/1#b63254c0-3271-4a98-8270-7cfbd6c2f14e",
@@ -646,7 +757,7 @@ curl -X PUT "https://api.buildkite.com/v2/organizations/{org.slug}/pipelines/{pi
         "id": "0b461f65-e7be-4c80-888a-ef11d81fd971",
         "graphql_id": "QWdlbnQtLS1mOTBhNzliNC01YjJlLTQzNzEtYjYxZS03OTA4ZDAyNmUyN2E=",
         "url": "https://api.buildkite.com/v2/organizations/my-great-org/agents/my-agent",
-        "web_url": "https://buildkite.com/organizations/buildkite/my-great-org/agents/0b461f65-e7be-4c80-888a-ef11d81fd971",
+        "web_url": "https://buildkite.com/organizations/my-great-org/agents/0b461f65-e7be-4c80-888a-ef11d81fd971",
         "name": "my-agent",
         "connection_state": "connected",
         "hostname": "localhost",
@@ -670,7 +781,14 @@ curl -X PUT "https://api.buildkite.com/v2/organizations/{org.slug}/pipelines/{pi
       "retried": false,
       "retried_in_job_id": null,
       "retries_count": null,
-      "retry_type": null
+      "retry_type": null,
+      "parallel_group_index": null,
+      "parallel_group_total": null,
+      "matrix": null,
+      "cluster_id": null,
+      "cluster_url": null,
+      "cluster_queue_id": null,
+      "cluster_queue_url": null
     }
   ],
   "created_at": "2015-05-09T21:05:59.874Z",
@@ -737,7 +855,7 @@ Each <em>build</em> is provided with the following timestamps:
   </tr>
   <tr>
     <th><code>finished_at</code></th>
-    <td>The time the build is marked as finished (passed, failed, paused, cancelled)</td>
+    <td>The time the build is marked as finished (passed, failed, paused, canceled)</td>
   </tr>
 </tbody>
 </table>
@@ -764,7 +882,7 @@ Each <em>job</em> is provided with the same timestamps, but their values differ 
   </tr>
   <tr>
     <th><code>finished_at</code></th>
-    <td>The time the job is marked as finished (passed, failed, paused, cancelled)</td>
+    <td>The time the job is marked as finished (passed, failed, paused, canceled)</td>
   </tr>
 </tbody>
 </table>

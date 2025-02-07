@@ -1,4 +1,4 @@
-# `buildkite-agent artifact`
+# buildkite-agent artifact
 
 The Buildkite Agent's `artifact` command provides support for uploading and
 downloading of build artifacts, allowing you to share binary data between build
@@ -7,13 +7,12 @@ steps no matter the machine or network.
 See the [Using build artifacts](/docs/builds/artifacts) guide for a step-by-step
 example.
 
-
 ## Uploading artifacts
 
-You can use this command in your build scripts to store artifacts. Artifacts are
-accessible using the web interface and can be downloaded by future build steps.
-Artifacts can be stored in the Buildkite-managed artifact store, or your own
-storage location, depending on how you have configured your Buildkite Agent.
+You can use this command in your build scripts to store artifacts. Artifacts are accessible using the web interface and can be downloaded by future build steps.
+Artifacts can be stored in the Buildkite-managed artifact store, or your own storage location, depending on how you have configured your Buildkite Agent.
+
+Be aware that the Buildkite-managed artifact store has an upload size limit of 5Gb per file/artifact.
 
 For documentation on configuring a custom storage location, see:
 
@@ -189,6 +188,7 @@ Environment Variable | Required | Default Value | Description
 `BUILDKITE_S3_ACL` | No | `public-read` | The S3 Object ACL to apply to uploads, one of `private`, `public-read`, `public-read-write`, `authenticated-read`, `bucket-owner-read`, `bucket-owner-full-control`.
 `BUILDKITE_S3_SSE_ENABLED` | No | `false` | If `true`, bucket uploads request AES256 server side encryption.
 `BUILDKITE_S3_ACCESS_URL` | No | `https://$bucket.s3.amazonaws.com` | If set, overrides the base URL used for the artifact's location stored with the Buildkite API.
+`BUILDKITE_S3_ENDPOINT` | No | N/A | URL of the self-hosted S3 compatible endpoint, for example, `https://instance_public_ip:port`. Note that setting this environment variable still requires setting the `BUILDKITE_ARTIFACT_UPLOAD_DESTINATION` environment variable value. However, the `BUILDKITE_ARTIFACT_UPLOAD_DESTINATION` value is ignored during the artifacts upload process, and artifacts will be uploaded to the respective S3 compatible endpoint.
 {: class="responsive-table"}
 
 You can set these environment variables from a variety of places. Exporting them
@@ -253,7 +253,7 @@ If your agents are running outside of AWS, or you're unable to use an instance
 profile, you can export
 [long lived credentials](http://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html)
 belonging to an IAM user using one of the environment variable groups listed
-above. See the [Managing pipeline secrets](/docs/pipelines/secrets)
+above. See the [Managing pipeline secrets](/docs/pipelines/security/secrets/managing)
 documentation for how to securely set up these environment variables.
 
 ### Access control
@@ -289,7 +289,7 @@ up, see our [Google Cloud installation guide](/docs/agent/v3/gcloud#uploading-ar
 
 You can configure the `buildkite-agent artifact` command to store artifacts in
 Artifactory. For instructions for how to set this up, see our
-[Artifactory guide](/docs/integrations/artifactory).
+[Artifactory guide](/docs/pipelines/integrations/other/artifactory).
 
 ## Using your private Azure Blob container
 
@@ -321,7 +321,7 @@ export BUILDKITE_AZURE_BLOB_CONNECTION_STRING='...'
 ```
 
 Since these can contain access credentials, they are
-[redacted from job logs by default](/docs/pipelines/managing-log-output#redacted-environment-variables).
+[redacted from job logs by default](/docs/pipelines/configure/managing-log-output#redacted-environment-variables).
 
 Make sure you have a valid storage account name and container. These can be
 created with the Azure web console or Azure CLI.
@@ -363,5 +363,5 @@ as well as use a shared key for the credential:
 export BUILDKITE_AZURE_BLOB_SAS_TOKEN_DURATION=1h
 
 # Generating SAS tokens requires an account key.
-export BUILDKITE_AZURE_BLOB_ACCOUNT_KEY='...'  
+export BUILDKITE_AZURE_BLOB_ACCOUNT_KEY='...'
 ```

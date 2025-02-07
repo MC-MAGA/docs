@@ -2,7 +2,7 @@
 
 A collection of common tasks with organizations using the GraphQL API.
 
-You can test out the Buildkite GraphQL API using the [Buildkite explorer](https://graphql.buildkite.com/explorer). This includes built-in documentation under the _Docs_ panel.
+You can test out the Buildkite GraphQL API using the [Buildkite explorer](https://graphql.buildkite.com/explorer). This includes built-in documentation under the **Docs** panel.
 
 ## List organization members
 
@@ -126,6 +126,27 @@ mutation UpdateSessionIPAddressPinning {
 }
 ```
 
+## Enforce two-factor authentication (2FA) for your organization
+
+Require users to have two-factor authentication enabled before they can access your organization's Buildkite dashboard.
+
+```graphql
+mutation EnableEnforced2FA {
+  organizationEnforceTwoFactorAuthenticationForMembersUpdate(
+    input: {
+      organizationId: "organization-id",
+      membersRequireTwoFactorAuthentication: true
+    }
+  ) {
+    organization {
+      id
+      membersRequireTwoFactorAuthentication
+      uuid
+    }
+  }
+}
+```
+
 ## Query the usage API
 
 Use the usage API to query your organization's usage by pipeline or test suite at daily granularity.
@@ -218,25 +239,24 @@ mutation CreateUser {
 }
 ```
 
+## Get the creation timestamp for an organization member
 
-
-## Delete an organization member
-
-This deletes a member from an organization. It does not delete their Buildkite user account.
-
-First, find the member's ID:
+Use this to find out when the user was added to the organization.
 
 ```graphql
-query getOrganizationMemberIds {
+query getOrganizationMemberCreation {
   organization(slug: "organization-slug") {
+    id
     members(search: "organization-member-name", first: 10) {
       edges {
         node {
-          role
-          user {
-            name
-          }
           id
+          createdAt
+          user {
+            id
+            name
+            email
+          }
         }
       }
     }
@@ -244,7 +264,74 @@ query getOrganizationMemberIds {
 }
 ```
 
-Then, use the ID to delete the user:
+## Update an organization member's role
+
+This updates an organization member's role to either `USER` or `ADMIN`.
+
+First, find the organization member's ID (`organization-member-id`) using their email address, noting that this ID value is not the same as the user's ID (`user-id`).
+
+```graphql
+query getOrgMemberID{
+  organization(slug: "organization-slug") {
+    members(first: 1, search: "user-email") {
+      edges {
+        node {
+          role
+          user {
+            name
+            email
+            id
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+Then, use this `organization-member-id` value (retrieved from the query above) to update the organization member's role.
+
+```graphql
+mutation UpdateOrgMemberRole {
+  organizationMemberUpdate (input:
+    {id:"organization-member-id", role:ADMIN}) {
+    organizationMember {
+      id
+      role
+      user {
+        name
+      }
+    }
+  }
+}
+```
+
+## Delete an organization member
+
+This deletes a member from an organization. This action does not delete their Buildkite user account.
+
+First, find the organization member's ID (`organization-member-id`) using their email address, noting that this ID value is not the same as the user's ID (`user-id`).
+
+```graphql
+query getOrgMemberID{
+  organization(slug: "organization-slug") {
+    members(first: 1, search: "user-email") {
+      edges {
+        node {
+          role
+          user {
+            name
+            email
+            id
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+Then, use this `organization-member-id` value (retrieved from the query above) to delete the user from the organization.
 
 ```graphql
 mutation deleteOrgMember {
@@ -254,7 +341,7 @@ mutation deleteOrgMember {
     }
     deletedOrganizationMemberID
     user{
-        name
+      name
     }
   }
 }
@@ -306,6 +393,86 @@ query getTimeScopedOrganizationAuditEvents{
         }
       }
     }
+  }
+}
+```
+
+## Get organization audit events of a specific user
+
+Query audit events from within an organization of a specific user. Audit events are only available to Enterprise customers.
+
+```graphql
+query getActorRefinedOrganizationAuditEvents{
+  organization(slug:"organization-slug"){
+    auditEvents(first: 500, actor: "user-id"){
+      edges{
+        node{
+          type
+          occurredAt
+          actor{
+            name
+          }
+          subject{
+            name
+            type
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+To find the actor's `user-id` for the query above, the following query can be run: replacing the `search` term with the name/email of the user:
+
+```graphql
+query getActorID{
+  organization(slug:"organization-slug"){
+    members(first:50, search: "search term"){
+      edges{
+        node{
+          user{
+            name
+            email
+            id
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+## Create & delete system banners (enterprise only)
+
+Create & delete system banners via the `organizationBannerUpsert` & `organizationBannerDelete` mutations.
+
+To create a banner call `organizationBannerUpsert` with the organization's GraphQL id and message.
+
+```graphql
+mutation OrganizationBannerUpsert {
+  organizationBannerUpsert(input: {
+    organizationId: "organization-id",
+    message: "**Change to 2FA**: On October 1st ECommerce Inc will require 2FA to be set to access all Pipelines. \r\n\r\n---\r\n\r\nIf you have not set already setup 2FA please go to: [https://buildkite.com/user/two-factor](https://buildkite.com/user/two-factor) and setup 2FA now. ",
+  }) {
+    clientMutationId
+    banner {
+      id
+      message
+      uuid
+    }
+  }
+}
+```
+
+To remove the banner call `organizationBannerDelete` with the organization's GraphQL id.
+
+```graphql
+mutation OrganizationBannerDelete {
+  organizationBannerDelete(input: {
+    organizationId: "organization-id"
+  }) {
+    deletedBannerId
   }
 }
 ```

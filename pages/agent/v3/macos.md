@@ -2,7 +2,6 @@
 
 The Buildkite Agent is supported on macOS 10.12 or newer using Homebrew or our installer script, and supports pre-release versions of both macOS and Xcode.
 
-
 ## Installation
 
 We recommend installing the agent using [Homebrew](http://brew.sh/) so you can use the [Buildkite formula repository](https://github.com/buildkite/homebrew-buildkite). If you don't use Homebrew you should follow the [Linux](/docs/agent/v3/linux) install instructions.
@@ -12,7 +11,7 @@ To install the agent using Homebrew:
 1. On the command line, install the agent by running:
 
     ```shell
-    brew tap buildkite/buildkite && brew install buildkite/buildkite/buildkite-agent
+    brew install buildkite/buildkite/buildkite-agent
     ```
 
 1. Add your [agent token](/docs/agent/v3/tokens) to authenticate the agent by replacing `INSERT-YOUR-AGENT-TOKEN-HERE` with your agent token and running:
@@ -20,6 +19,7 @@ To install the agent using Homebrew:
     ```shell
     sed -i '' "s/xxx/INSERT-YOUR-AGENT-TOKEN-HERE/g" "$(brew --prefix)"/etc/buildkite-agent/buildkite-agent.cfg
     ```
+    **Note:** To verify that your agent token has been added to the `buildkite-agent.cfg` file, run `cat $(brew --prefix)/etc/buildkite-agent/buildkite-agent.cfg`, and check that the output contains your agent token.
 
 1. Start the agent by running:
 

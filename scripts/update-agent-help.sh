@@ -10,6 +10,7 @@ commands=(
   "artifact upload"
   "artifact search"
   "bootstrap"
+  "build cancel"
   "env dump"
   "env set"
   "env get"
@@ -25,9 +26,14 @@ commands=(
   "meta-data set"
   "oidc request-token"
   "pipeline upload"
+  "redactor add"
+  "secret get"
   "start"
   "step get"
   "step update"
+  "step cancel"
+  "tool keygen"
+  "tool sign"
 )
 
 scripts_dir=$(dirname "${BASH_SOURCE[0]}")

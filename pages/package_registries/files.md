@@ -1,0 +1,82 @@
+
+# Files
+
+Buildkite Package Registries provides registry support for generic _files_ to cover some use cases where native package management either isn't required or isn't available.
+
+Once your **Files** source registry has been [created](/docs/package-registries/manage-registries#create-a-source-registry), you can publish/upload files (of any type and extension) to this registry via the relevant `curl` command presented on your file registry details page.
+
+To view and copy this `curl` command:
+
+1. Select **Package Registries** in the global navigation to access the **Registries** page.
+1. Select your file source registry on this page.
+1. Select **Publish a File** and in the resulting dialog, use the copy icon at the top-right of the code box to copy this `curl` command and run it to publish a file to this registry.
+
+This command provides:
+
+- The specific URL to publish a file to your specific file source registry in Buildkite.
+- The API access token required to publish files to your file source registry.
+- The file to be published.
+
+## Publish a file
+
+The following `curl` command (which you'll need to modify as required before submitting) describes the process above to publish a file to your file source registry:
+
+```bash
+curl -X POST https://api.buildkite.com/v2/packages/organizations/{org.slug}/registries/{registry.slug}/packages \
+  -H "Authorization: Bearer $REGISTRY_WRITE_TOKEN" \
+  -F "file=@<path_to_file>"
+```
+
+where:
+
+<%= render_markdown partial: 'package_registries/org_slug' %>
+
+- `{registry.slug}` is the slug of your file source registry, which is the [kebab-case](https://en.wikipedia.org/wiki/Letter_case#Kebab_case) version of this registry's name, and can be obtained after accessing **Package Registries** in the global navigation > your file source registry from the **Registries** page.
+
+- `$REGISTRY_WRITE_TOKEN` is your [API access token](https://buildkite.com/user/api-access-tokens) used to publish/upload files to your file source registry. Ensure this access token has the **Read Packages** and **Write Packages** REST API scopes, which allows this token to publish files to any source registry your user account has access to within your Buildkite organization.
+
+- `<path_to_file>` is the full path required to the file. If the file is located in the same directory that this command is running from, then no path is required.
+
+For example, to upload the file `my-custom-app.ipa` from the current directory to the **My files** source registry in the **My organization** Buildkite organization, run the `curl` command:
+
+```bash
+curl -X POST https://api.buildkite.com/v2/packages/organizations/my-organization/registries/my-files/packages \
+  -H "Authorization: Bearer $REPLACE_WITH_YOUR_REGISTRY_WRITE_TOKEN" \
+  -F "file=@my-custom-app.ipa"
+```
+
+## Access a file's details
+
+The file's details can be accessed from its source registry through the **Releases** (tab) section of your file source registry page. To do this:
+
+1. Select **Package Registries** in the global navigation to access the **Registries** page.
+1. Select your file source registry on this page.
+1. On your file source registry page, select the file to display its details page.
+
+The file's details page provides the following information in the following sections:
+
+- **Installation** (tab): the [installation instructions](#access-a-files-details-downloading-a-file).
+- **Details** (tab): a list of checksum values for this file—MD5, SHA1, SHA256, and SHA512.
+- **About this version**: a brief (metadata) description about the file.
+- **Details**: details about:
+
+    * the name of the file (typically the file name excluding any version details and extension).
+    * the registry the file is located in.
+    * the file's visibility (based on its registry's visibility)—whether the file is **Private** and requires authentication to access, or is publicly accessible.
+
+- **Pushed**: the date when the last file was uploaded to the source registry.
+- **File size**: the storage size (in bytes) of this file.
+- **Downloads**: the number of times this file has been downloaded.
+
+### Downloading a file
+
+The file can be downloaded from the file's details page. To do this:
+
+1. [Access the file's details](#access-a-files-details).
+1. Select **Download**.
+
+Alternatively, a file can be downloaded via the command line using code snippet details provided on the file details page. To do this:
+
+1. [Access the file's details](#access-a-files-details).
+1. Ensure the **Installation** > **Instructions** section is displayed.
+1. For each required command in the relevant code snippets, copy the relevant code snippet, paste it into your terminal, and run it.

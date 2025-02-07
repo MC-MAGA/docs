@@ -1,7 +1,12 @@
 # Running Buildkite Agent on Google Cloud Platform
 
-The Buildkite Agent can be run on [Google Cloud Platform](https://cloud.google.com). For fine control over long–lived agents, you might like to run the agent using individual VM instances on Google Compute Engine. Or run Docker–based builds using a scalable cluster of agents on the Google Kubernetes Engine using Kubernetes.
+The Buildkite Agent can be run on [Google Cloud Platform](https://cloud.google.com) (GCP). For fine control over long–lived agents, you might like to run the agent using individual VM instances on Google Compute Engine. Or run Docker–based builds using a scalable cluster of agents on the Google Kubernetes Engine using Kubernetes.
 
+## Using the Buildkite Agent Stack for Kubernetes on the Google Cloud Platform
+
+The Buildkite Agent's jobs can be run within a Kubernetes cluster on GCP.
+
+Once your Kubernetes cluster is running on GCP, follow the [Buildkite Agent Stack for Kubernetes](https://github.com/buildkite/agent-stack-k8s?tab=readme-ov-file#buildkite-agent-stack-for-kubernetes) instructions to set up the Buildkite Agent stack to run in Kubernetes.
 
 ## Running the agent on Google Compute Engine
 
@@ -19,15 +24,15 @@ Follow the [setup instructions for Ubuntu](/docs/agent/v3/ubuntu).
 
 ## Running the agent on Google Kubernetes Engine
 
-[Google Kubernetes Engine](https://cloud.google.com/kubernetes-engine) can run the agent as a [Docker](https://www.docker.com) container using [Kubernetes](https://kubernetes.io). To [run Docker–based builds](/docs/tutorials/docker-containerized-builds), ensure the container is started with a [privileged security context](https://kubernetes.io/docs/concepts/workloads/pods/#privileged-mode-for-containers) and mount the Docker socket as a volume.
+[Google Kubernetes Engine](https://cloud.google.com/kubernetes-engine) can run the agent as a [Docker](https://www.docker.com) container using [Kubernetes](https://kubernetes.io). To [run Docker–based builds](/docs/pipelines/tutorials/docker-containerized-builds), ensure the container is started with a [privileged security context](https://kubernetes.io/docs/concepts/workloads/pods/#pod-security) and mount the Docker socket as a volume.
 
-In the [Google Cloud Console](https://console.cloud.google.com/kubernetes/add), create a _Standard_ Google Kubernetes Engine cluster:
+In the [Google Cloud Console](https://console.cloud.google.com/kubernetes/add), create a **Standard** Google Kubernetes Engine cluster:
 
 <%= image "create-a-k8s-cluster.png", width: 863, height: 917, alt: "Screenshot of creating a Google Kubernetes Engine cluster using the Google Cloud Console" %>
 
 Open [Google Cloud Shell](https://cloud.google.com/shell/), or your own console with [gcloud](https://cloud.google.com/sdk/gcloud/) installed and authenticated.j
 
-Then, after a minute, configure kubectl to talk to your new cluster. The console includes a _Connect_ button which shows the exact command to run:
+Then, after a minute, configure kubectl to talk to your new cluster. The console includes a **Connect** button which shows the exact command to run:
 
 <%= image "connect-to-k8s-cluster.png", width: 1044, height: 511, alt: "Screenshot of cluster connection settings in the Google Cloud Console" %>
 
@@ -228,7 +233,7 @@ volumes:
     defaultMode: 0400
 ...
 ```
-_You'll need to add an environment hook to set the git `credential.helper` to actually use your newly added git-credentials file. See [here](/docs/agent/v3/docker#authenticating-private-git-repositories) for an example._
+_You'll need to add an environment hook to set the git `credential.helper` to actually use your newly added git-credentials file. See the [Docker instructions for authenticating private git repositories](/docs/agent/v3/docker#authenticating-private-git-repositories) for an example._
 
 ### Further configuration
 
@@ -250,7 +255,7 @@ export BUILDKITE_ARTIFACT_UPLOAD_DESTINATION="gs://my-bucket/$BUILDKITE_PIPELINE
 
 Make sure the agent has permission to create new objects. If the agent is running on Google Compute Engine or Google Kubernetes Engine you can grant Storage Write permission to the instance or cluster, or restrict access more specifically using [a service account](https://cloud.google.com/compute/docs/access/service-accounts).
 
-You can also set the application credentials with the environment variable `BUILDKITE_GS_APPLICATION_CREDENTIALS`. From Agent v3.15.2 and above you can also use raw JSON with the `BUILDKITE_GS_APPLICATION_CREDENTIALS_JSON` variable. See the [Managing Pipeline Secrets](/docs/pipelines/secrets) documentation for how to securely set up environment variables.
+You can also set the application credentials with the environment variable `BUILDKITE_GS_APPLICATION_CREDENTIALS`. From Agent v3.15.2 and above you can also use raw JSON with the `BUILDKITE_GS_APPLICATION_CREDENTIALS_JSON` variable. See the [Managing Pipeline Secrets](/docs/pipelines/security/secrets/managing) documentation for how to securely set up environment variables.
 
 If you are using any of the non-public [predefined Access Control Lists (ACLs)](https://cloud.google.com/storage/docs/access-control/lists#predefined-acl) to control permissions on your bucket, you won't have automatic access to your artifacts through the links in the Buildkite web interface. Artifacts will inherit the permissions of the bucket into which they're uploaded. You can set a specific ACL on an artifact:
 
@@ -258,7 +263,7 @@ If you are using any of the non-public [predefined Access Control Lists (ACLs)](
 export BUILDKITE_GS_ACL="publicRead"
 ```
 
-If you need to be authenticated to view the objects in your bucket, you can use Google Cloud Storage's [cookie-based authentication](https://cloud.google.com/storage/docs/access-control/cookie-based-authentication):
+If you need to be authenticated to view the objects in your bucket, you can use Google Cloud Storage's [cookie-based authentication](https://cloud.google.com/storage/docs/request-endpoints#cookieauth):
 
 ```shell
 export BUILDKITE_GCS_ACCESS_HOST="storage.cloud.google.com"

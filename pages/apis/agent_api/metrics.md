@@ -4,14 +4,15 @@ toc: false
 
 # Metrics API
 
-The Metrics API endpoint provides information on idle and busy agents, jobs, and queues for the [Agent registration token](/docs/agent/v3/tokens) supplied in the request `Authorization` header.
+The metrics API endpoint provides information on idle and busy agents, jobs, and queues for the [Agent registration token](/docs/agent/v3/tokens) supplied in the request `Authorization` header.
 
 ## Get metrics
 
 Get agent metrics
 
-```
-curl -H "Authorization: Token $BUILDKITE_AGENT_TOKEN" "https://agent.buildkite.com/v3/metrics"
+```bash
+curl -H "Authorization: Token $BUILDKITE_AGENT_TOKEN" \
+  -X GET "https://agent.buildkite.com/v3/metrics"
 ```
 
 ```json

@@ -1,13 +1,10 @@
 # Clusters API
 
-The clusters API lets you create and manage clusters in your organization.
-
-> 📘 Enable clusters
-> You'll need to [enable clusters](/docs/clusters/overview#enable-clusters) for your organization to use this API.
+The clusters API endpoint lets you create and manage clusters in your organization.
 
 ## Clusters
 
-A [cluster](/docs/clusters/overview) is an isolated set of agents and pipelines within an organization.
+A [cluster](/docs/pipelines/clusters) is an isolated set of agents and pipelines within an organization.
 
 ### Cluster data model
 
@@ -34,7 +31,8 @@ A [cluster](/docs/clusters/overview) is an isolated set of agents and pipelines 
 Returns a [paginated list](<%= paginated_resource_docs_url %>) of an organization's clusters.
 
 ```bash
-curl "https://api.buildkite.com/v2/organizations/{org.slug}/clusters"
+curl -H "Authorization: Bearer $TOKEN" \
+  -X GET "https://api.buildkite.com/v2/organizations/{org.slug}/clusters"
 ```
 
 ```json
@@ -71,7 +69,8 @@ Success response: `200 OK`
 ### Get a cluster
 
 ```bash
-curl "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{id}"
+curl -H "Authorization: Bearer $TOKEN" \
+  -X GET "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{id}"
 ```
 
 ```json
@@ -106,7 +105,8 @@ Success response: `200 OK`
 ### Create a cluster
 
 ```bash
-curl -X POST "https://api.buildkite.com/v2/organizations/{org.slug}/clusters" \
+curl -H "Authorization: Bearer $TOKEN" \
+  -X POST "https://api.buildkite.com/v2/organizations/{org.slug}/clusters" \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Open Source",
@@ -174,7 +174,8 @@ Error responses:
 ### Update a cluster
 
 ```bash
-curl -X PUT "https://api.buildkite.com/v2/organizations/{org.slug}/clusters" \
+curl -H "Authorization: Bearer $TOKEN" \
+  -X PUT "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{id}" \
   -H "Content-Type: application/json" \
   -d '{ "name": "Open Source" }'
 ```
@@ -233,7 +234,8 @@ Error responses:
 Delete a cluster along with any queues and tokens that belong to it.
 
 ```bash
-curl -X DELETE "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{id}"
+curl -H "Authorization: Bearer $TOKEN" \
+  -X DELETE "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{id}"
 ```
 
 Required scope: `write_clusters`
@@ -248,11 +250,11 @@ Error responses:
 </tbody>
 </table>
 
-## Cluster queues
+## Queues
 
-[Cluster queues](/docs/clusters/manage-clusters#set-up-clusters-create-a-queue) are discrete groups of agents within a cluster. Pipelines in that cluster can target cluster queues to run jobs on agents assigned to those queues.
+[Queues](/docs/pipelines/clusters/manage-queues) are discrete groups of agents within a cluster. Pipelines in that cluster can target queues to run jobs on agents assigned to those queues.
 
-### Cluster queue data model
+### Queue data model
 
 <table class="responsive-table">
   <tbody>
@@ -277,7 +279,8 @@ Error responses:
 Returns a [paginated list](<%= paginated_resource_docs_url %>) of a cluster's queues.
 
 ```bash
-curl "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{cluster.id}/queues"
+curl -H "Authorization: Bearer $TOKEN" \
+  -X GET "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{cluster.id}/queues"
 ```
 
 ```json
@@ -314,7 +317,8 @@ Success response: `200 OK`
 ### Get a queue
 
 ```bash
-curl "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{cluster.id}/queues/{queue.id}"
+curl -H "Authorization: Bearer $TOKEN" \
+  -X GET "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{cluster.id}/queues/{queue.id}"
 ```
 
 ```json
@@ -346,10 +350,11 @@ Required scope: `read_clusters`
 
 Success response: `200 OK`
 
-### Create a queue
+### Create a self-hosted queue
 
 ```bash
-curl -X POST "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{cluster.id}/queues" \
+curl -H "Authorization: Bearer $TOKEN" \
+  -X POST "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{cluster.id}/queues" \
   -H "Content-Type: application/json" \
   -d '{ "key": "default", "description": "The default queue for this cluster" }'
 ```
@@ -387,11 +392,91 @@ Required [request body properties](/docs/api#request-body-properties):
 </tbody>
 </table>
 
+Required scope: `write_clusters`
+
+Success response: `201 Created`
+
+Error responses:
+
+<table class="responsive-table">
+<tbody>
+  <tr><th><code>422 Unprocessable Entity</code></th><td><code>{ "message": "Validation failed: Reason for failure" }</code></td></tr>
+</tbody>
+</table>
+
+### Create a Buildkite hosted queue
+
+```bash
+curl -H "Authorization: Bearer $TOKEN" \
+  -X POST "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{cluster.id}/queues" \
+  -H "Content-Type: application/json" \
+  -d '{ "key": "default", "description": "Queue of hosted Buildkite agents", "hostedAgents": { "instanceShape": "LINUX_AMD64_2X4" } }'
+```
+
+```json
+{
+  "id": "01885682-55a7-44f5-84f3-0402fb452e66",
+  "graphql_id": "Q2x1c3Rlci0tLTQyZjFhN2RhLTgxMmQtNDQzMC05M2Q4LTFjYzdjMzNhNmJjZg==",
+  "key": "default",
+  "description": "Queue of hosted Buildkite agents",
+  "url": "http://api.buildkite.com/v2/organizations/test/clusters/42f1a7da-812d-4430-93d8-1cc7c33a6bcf/queues/01885682-55a7-44f5-84f3-0402fb452e66",
+  "web_url": "http://buildkite.com/organizations/test/clusters/42f1a7da-812d-4430-93d8-1cc7c33a6bcf/queues/01885682-55a7-44f5-84f3-0402fb452e66",
+  "cluster_url": "http://api.buildkite.com/v2/organizations/test/clusters/42f1a7da-812d-4430-93d8-1cc7c33a6bcf",
+  "dispatch_paused": false,
+  "dispatch_paused_by": null,
+  "dispatch_paused_at": null,
+  "dispatch_paused_note": null,
+  "created_at": "2023-05-03T04:17:55.867Z",
+  "created_by": {
+    "id": "0187dfd4-92cf-4b01-907b-1146c8525dde",
+    "graphql_id": "VXNlci0tLTAxODdkZmQ0LTkyY2YtNGIwMS05MDdiLTExNDZjODUyNWRkZQ==",
+    "name": "Sam Kim",
+    "email": "sam@example.com",
+    "avatar_url": "https://www.gravatar.com/avatar/example",
+    "created_at": "2023-05-03T04:17:43.118Z"
+  },
+  "hosted": true,
+  "hosted_agents": {
+    "instance_shape": {
+      "machine_type": "linux",
+      "architecture": "amd64",
+      "cpu": 2,
+      "memory": 4,
+      "name": "LINUX_AMD64_2X4"
+    }
+  }
+}
+```
+
+Required [request body properties](/docs/api#request-body-properties):
+
+<table class="responsive-table">
+<tbody>
+  <tr><th><code>key</code></th><td>Key for the queue.<br><em>Example:</em> <code>"default"</code>
+</tbody>
+</table>
+
 Optional [request body properties](/docs/api#request-body-properties):
 
 <table class="responsive-table">
 <tbody>
   <tr><th><code>description</code></th><td>Description for the queue.<br><em>Example:</em> <code>"The default queue for this cluster"</code>
+  <tr>
+    <th><code>hostedAgents</code></th>
+    <td>
+      Configures this queue to use <a href="/docs/pipelines/hosted-agents">Buildkite hosted agents</a>, along with its <em>instance shape</em>. This makes the queue a <a href="/docs/pipelines/clusters/manage-queues#create-a-buildkite-hosted-queue">Buildkite hosted queue</a>.
+      <br>
+      <em>Example:</em>
+      <br/>
+      <code>
+        { "instanceShape": "LINUX_AMD64_2X4" }
+      </code>
+      <br/>
+      <code>instanceShape</code> (required when <code>hostedAgents</code> is specified): Describes the machine type, architecture, CPU, and RAM to provision for Buildkite hosted agent instances running jobs in this queue.
+      <br/>
+      Learn more about the instance shapes available for <a href="#queues-instance-shape-values-for-linux">Linux</a> and <a href="#queues-instance-shape-values-for-macos">macOS</a> hosted agents.
+  </td>
+  </tr>
 </tbody>
 </table>
 
@@ -410,7 +495,8 @@ Error responses:
 ### Update a queue
 
 ```bash
-curl -X PUT "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{cluster.id}/queues/{id}" \
+curl -H "Authorization: Bearer $TOKEN" \
+  -X PUT "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{cluster.id}/queues/{id}" \
   -H "Content-Type: application/json" \
   -d '{ "description": "The default queue for this cluster" }'
 ```
@@ -445,6 +531,23 @@ curl -X PUT "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{clu
 <table class="responsive-table">
 <tbody>
   <tr><th><code>description</code></th><td>Description for the queue.<br><em>Example:</em> <code>"The default queue for this cluster"</code>
+  <tr>
+    <th><code>hostedAgents</code></th>
+    <td>
+      Configures this queue to use <a href="/docs/pipelines/hosted-agents">Buildkite hosted agents</a>, along with its <em>instance shape</em>. This makes the queue a <a href="/docs/pipelines/clusters/manage-queues#create-a-buildkite-hosted-queue">Buildkite hosted queue</a>.
+      <br>
+      <em>Example:</em>
+      <br/>
+      <code>
+        { "instanceShape": "LINUX_AMD64_2X4" }
+      </code>
+      <br/>
+      <code>instanceShape</code> (required when <code>hostedAgents</code> is specified): Describes the machine type, architecture, CPU, and RAM to provision for Buildkite hosted agent instances running jobs in this queue.
+      <br/>
+      It is only possible to change the <em>size</em> of the current instance shape assigned to this queue. It is not possible to change the current instance shape's machine type (from macOS to Linux, or vice versa), or for a Linux machine, its architecture (from AMD64 to ARM64, or vice versa).<br/>
+      Learn more about the instance shapes available for <a href="#queues-instance-shape-values-for-linux">Linux</a> and <a href="#queues-instance-shape-values-for-macos">macOS</a> Buildkite hosted agents.
+  </td>
+  </tr>
 </tbody>
 </table>
 
@@ -463,7 +566,8 @@ Error responses:
 ### Delete a queue
 
 ```bash
-curl -X DELETE "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{cluster.id}/queues/{id}"
+curl -H "Authorization: Bearer $TOKEN" \
+  -X DELETE "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{cluster.id}/queues/{id}"
 ```
 
 Required scope: `write_clusters`
@@ -480,10 +584,11 @@ Error responses:
 
 ### Pause a queue
 
-[Pause a queue](/docs/clusters/manage-clusters#pause-a-queue) to prevent jobs from being dispatched to agents associated with the queue.
+[Pause a queue](/docs/pipelines/clusters/manage-queues#pause-and-resume-a-queue) to prevent jobs from being dispatched to agents associated with the queue.
 
 ```bash
-curl -X POST "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{cluster.id}/queues/{id}/pause_dispatch" \
+curl -H "Authorization: Bearer $TOKEN" \
+  -X POST "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{cluster.id}/queues/{id}/pause_dispatch" \
   -H "Content-Type: application/json" \
   -d '{ "dispatch_paused_note": "Paused while we investigate a security issue" }'
 ```
@@ -549,7 +654,8 @@ Error responses:
 ### Resume a paused queue
 
 ```bash
-curl -X POST "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{cluster.id}/queues/{id}/resume_dispatch" \
+curl -H "Authorization: Bearer $TOKEN" \
+  -X POST "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{cluster.id}/queues/{id}/resume_dispatch" \
   -H "Content-Type: application/json"
 ```
 
@@ -590,9 +696,21 @@ Error responses:
 </tbody>
 </table>
 
-## Cluster tokens
+### Instance shape values for Linux
 
-A [cluster token](/docs/clusters/manage-clusters#set-up-clusters-connect-agents-to-a-cluster) is used to connect agents to a cluster.
+Specify the appropriate **Instance shape** for the `instanceShape` value in your REST API call.
+
+<%= render_markdown partial: 'shared/hosted_agents/hosted_agents_instance_shape_table_linux' %>
+
+### Instance shape values for macOS
+
+Specify the appropriate **Instance shape** for the `instanceShape` value in your REST API call.
+
+<%= render_markdown partial: 'shared/hosted_agents/hosted_agents_instance_shape_table_mac' %>
+
+## Agent tokens
+
+An agent token is used to [connect agents to a cluster](/docs/pipelines/clusters/manage-clusters#connect-agents-to-a-cluster).
 
 ### Token data model
 
@@ -611,10 +729,11 @@ A [cluster token](/docs/clusters/manage-clusters#set-up-clusters-connect-agents-
 
 ### List tokens
 
-Returns a [paginated list](<%= paginated_resource_docs_url %>) of a cluster's tokens.
+Returns a [paginated list](<%= paginated_resource_docs_url %>) of a cluster's agent tokens.
 
 ```bash
-curl "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{cluster.id}/tokens"
+curl -H "Authorization: Bearer $TOKEN" \
+  -X GET "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{cluster.id}/tokens"
 ```
 
 ```json
@@ -646,7 +765,8 @@ Success response: `200 OK`
 ### Get a token
 
 ```bash
-curl "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{cluster.id}/tokens/{token.id}"
+curl -H "Authorization: Bearer $TOKEN" \
+  -X GET "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{cluster.id}/tokens/{token.id}"
 ```
 
 ```json
@@ -679,7 +799,8 @@ Success response: `200 OK`
 > To ensure the security of tokens, the value is only included in the response for the request to create the token. Subsequent responses do not contain the token value.
 
 ```bash
-curl -X POST "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{cluster.id}/tokens" \
+curl -H "Authorization: Bearer $TOKEN" \
+  -X POST "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{cluster.id}/tokens" \
   -H "Content-Type: application/json" \
   -d '{ "description": "Windows agents", "allowed_ip_addresses": "202.144.0.0/24" }'
 ```
@@ -728,7 +849,8 @@ Error responses:
 ### Update a token
 
 ```bash
-curl -X PUT "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{cluster.id}/tokens/{id}" \
+curl -H "Authorization: Bearer $TOKEN" \
+  -X PUT "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{cluster.id}/tokens/{id}" \
   -H "Content-Type: application/json" \
   -d '{ "description": "Windows agents", "allowed_ip_addresses": "202.144.0.0/24" }'
 ```
@@ -773,10 +895,11 @@ Error responses:
 </tbody>
 </table>
 
-### Delete a token
+### Revoke a token
 
 ```bash
-curl -X DELETE "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{cluster.id}/tokens/{id}"
+curl -H "Authorization: Bearer $TOKEN" \
+  -X DELETE "https://api.buildkite.com/v2/organizations/{org.slug}/clusters/{cluster.id}/tokens/{id}"
 ```
 
 Required scope: `write_clusters`
@@ -787,6 +910,6 @@ Error responses:
 
 <table class="responsive-table">
 <tbody>
-  <tr><th><code>422 Unprocessable Entity</code></th><td><code>{ "message": "Reason the token couldn't be deleted" }</code></td></tr>
+  <tr><th><code>422 Unprocessable Entity</code></th><td><code>{ "message": "Reason the token couldn't be revoked" }</code></td></tr>
 </tbody>
 </table>

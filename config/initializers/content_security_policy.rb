@@ -19,7 +19,7 @@
 Rails.application.config.content_security_policy do |policy|
   policy.default_src :self
   policy.font_src    :self, "https://www2.buildkiteassets.com/"
-  policy.object_src  :none, "https://beacon-v2.helpscout.net"
+  policy.object_src  "https://beacon-v2.helpscout.net"
   policy.style_src   :self, :unsafe_inline, "https://beacon-v2.helpscout.net"
 
   policy.img_src(
@@ -44,6 +44,8 @@ Rails.application.config.content_security_policy do |policy|
   policy.script_src *policy.script_src, :unsafe_eval, "http://#{ ViteRuby.config.host_with_port }" if Rails.env.development?
 
   policy.connect_src(
+    "https://www.google-analytics.com",
+
     # allow AJAX queries against our search vendor
     "https://#{ENV['ALGOLIA_APP_ID']}-dsn.algolia.net",
     "https://#{ENV['ALGOLIA_APP_ID']}-1.algolianet.com",
@@ -52,14 +54,22 @@ Rails.application.config.content_security_policy do |policy|
 
     "https://cdn.segment.com/",
     "https://api.segment.io/",
+
+    # We have Datadog Real User Monitoring enabled
+    "https://rum.browser-intake-datadoghq.com",
+
+    # For collecting feedback from customers
     "https://emojicom.io/",
+
+    # helpscout beacon sends data to two places
     "https://beacon-v2.helpscout.net",
-    "https://rum.browser-intake-datadoghq.com"
+    "https://d3hb14vkzrxvla.cloudfront.net",
   )
 
   # Allow @vite/client to hot reload changes in development
   policy.connect_src *policy.connect_src, "ws://#{ ViteRuby.config.host_with_port }" if Rails.env.development?
 
+  # For collecting feedback from customers
   policy.frame_src(
     "https://cdn.emojicom.io/"
   )
@@ -68,8 +78,11 @@ Rails.application.config.content_security_policy do |policy|
    "https://beacon-v2.helpscout.net"
   )
 
-  # Specify URI for violation reports
-  policy.report_uri "/_csp-violation-reports"
+  # Specify URI for violation reports. We only include this in the header in some environments, mostly
+  # so CSP in dev+test is still in play but it doesn't send useless reports to anywhere
+  if ENV.key?("CSP_REPORT_URI")
+    policy.report_uri ENV.fetch("CSP_REPORT_URI", nil)
+  end
 end
 
 # We use nonce for inline scripts

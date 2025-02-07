@@ -8,8 +8,7 @@ The Buildkite Agent can be run on AWS using our Elastic CI Stack for AWS
 CloudFormation template, or by installing the agent on your self-managed
 instances.
 
-
-## Using our Elastic CI Stack for AWS CloudFormation template
+## Using the Elastic CI Stack for AWS CloudFormation template
 
 The [Elastic CI Stack for AWS](/docs/agent/v3/elastic-ci-aws/elastic-ci-stack-overview) is a
 CloudFormation template for an autoscaling Buildkite Agent cluster. The
@@ -22,6 +21,14 @@ integration tests, or perform any AWS ops related tasks.
 You can launch an instance of the Elastic CI Stack for AWS from your
 organization's [Agents page](http://buildkite.com/organizations/-/agents) or
 the [GitHub repository](https://github.com/buildkite/elastic-ci-stack-for-aws).
+
+## Using the Buildkite Agent Stack for Kubernetes on AWS
+
+The Buildkite Agent's jobs can be run within a Kubernetes cluster on AWS.
+
+Before you start, you will require your own Kubernetes cluster running on AWS. Learn more about this from [Kubernetes on AWS](https://aws.amazon.com/kubernetes/).
+
+Once your Kubernetes cluster is running on AWS, follow the [Buildkite Agent Stack for Kubernetes](https://github.com/buildkite/agent-stack-k8s?tab=readme-ov-file#buildkite-agent-stack-for-kubernetes) instructions to set up the Buildkite Agent stack to run in Kubernetes.
 
 ## Installing the agent on your own AWS instances
 
@@ -61,11 +68,11 @@ can access the instance.
 	- Enable screen sharing using `sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate -configure -access -on -restart -agent -privs -all`
 	- Grow the AFPS container to use all the available space in your EBS root disk if needed, see the [AWS user guide](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-mac-instances.html#mac-instance-increase-volume)
 1. Using a VNC session (run SSH port forwarding `ssh -L 5900:localhost:5900 ec2-user@<ip-address>` if direct access is not available):
-	1. Sign in as the `ec2-user`
-	1. Enable *Automatic login* for the `ec2-user` in *System Preferences* > *Users & Accounts* > *Login Options*
-	1. Disable *Require password* in *System Preferences* > *Security & Privacy* > *General*
-	1. Set system sleep in *System Preferences* > *Energy Saver* > *Turn display off after* to *Never*
-	1. Disable the screen saver in *System Preferences* > *Desktop & Screen Saver* > *Show screen saver after*
+	1. Sign in as the `ec2-user`.
+	1. Enable **Automatic login** for the `ec2-user` in **System Preferences** > **Users & Accounts** > **Login Options**.
+	1. Disable **Require password** in **System Preferences** > **Security & Privacy** > **General**.
+	1. Set system sleep in **System Preferences** > **Energy Saver** > **Turn display off after** to **Never**.
+	1. Disable the screen saver in **System Preferences** > **Desktop & Screen Saver** > **Show screen saver after**.
 1. Follow the [macOS installation guide](/docs/agent/v3/macos#installation)
 instructions to install the Buildkite agent using Homebrew and configure
 starting on login.
@@ -115,7 +122,7 @@ You can divide your Buildkite agents by responsibilities. For example — agents
 
 To divide the responsibilities and permissions of Buildkite agents and provide the relevant teams with sandboxed IAM permissions for their own microservices, for each pipeline you will need to use a [third-party AWS AssumeRole Buildkite Plugin](https://github.com/cultureamp/aws-assume-role-buildkite-plugin/). This plugin also takes care of the injection of AWS credentials.
 
-To ensure that the agent in charge of a job, build, pipeline, etc., is allowed to run and will assume the role it has permission to, you can perform a [pre-checkout hook](https://buildkite.com/docs/agent/v3/hooks) on the agent.
+To ensure that the agent in charge of a job, build, pipeline, etc., is allowed to run and will assume the role it has permission to, you can perform a [pre-checkout hook](/docs/agent/v3/hooks) on the agent.
 
 ### Restricting permissions by downgrading an instance profile role
 
