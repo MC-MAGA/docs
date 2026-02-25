@@ -124,6 +124,74 @@ Once enabled, the agent will generate the following metrics (duration measured i
 - `buildkite.jobs.duration.success.median`
 - `buildkite.jobs.duration.success.95percentile`
 
+## Buildkite agent metrics CLI
+
+The [buildkite-agent-metrics](https://github.com/buildkite/buildkite-agent-metrics) tool is a standalone command-line binary that collects agent and job metrics from the [Buildkite Agent API](/docs/apis/agent-api/metrics) and publishes them to a metrics backend of your choice. It's particularly useful for enabling auto-scaling based on queue depth and agent availability.
+
+The tool supports the following backends:
+
+- [AWS CloudWatch](https://aws.amazon.com/cloudwatch/) (default)
+- [StatsD](https://github.com/etsy/statsd) (including Datadog-compatible tagging)
+- [Prometheus](https://prometheus.io)
+- [Stackdriver](https://cloud.google.com/stackdriver/)
+- [New Relic](https://newrelic.com/products/insights)
+- [OpenTelemetry](https://opentelemetry.io)
+
+### Installing
+
+Download the latest binary from [GitHub Releases](https://github.com/buildkite/buildkite-agent-metrics/releases), or run it as a Docker container:
+
+```shell
+docker run --rm public.ecr.aws/buildkite/agent-metrics:latest \
+  -token "$BUILDKITE_AGENT_TOKEN" \
+  -interval 30s \
+  -queue my-queue
+```
+
+You can also install from source using Go:
+
+```shell
+go install github.com/buildkite/buildkite-agent-metrics/v5@latest
+```
+
+### Running
+
+The tool requires an [agent registration token](/docs/agent/self-hosted/configure#token) or [cluster token](/docs/agent/queues#assigning-a-self-hosted-agent-to-a-queue). The simplest deployment runs it as a long-running daemon that collects metrics across all queues in an organization:
+
+```shell
+buildkite-agent-metrics -token "$BUILDKITE_AGENT_TOKEN" -interval 30s
+```
+
+To restrict collection to specific queues, use the `-queue` flag (repeatable):
+
+```shell
+buildkite-agent-metrics -token "$BUILDKITE_AGENT_TOKEN" -interval 30s -queue my-queue
+```
+
+To select a backend, use the `-backend` flag:
+
+```shell
+buildkite-agent-metrics -token "$BUILDKITE_AGENT_TOKEN" -interval 30s -backend statsd
+```
+
+### Collected metrics
+
+The tool collects the following metrics per organization and per queue:
+
+Metric    | Description
+--------- | ---
+`ScheduledJobsCount` | Jobs waiting in the queue for an available agent. Should be close to zero if you have sufficient agent capacity.
+`RunningJobsCount` | Jobs currently being executed by agents.
+`WaitingJobsCount` | Jobs that aren't schedulable yet due to dependencies or `wait` steps. Useful for auto-scaling, as these represent work that starts soon.
+`UnfinishedJobsCount` | All jobs that have been scheduled but haven't finished. Includes both running and scheduled jobs.
+`IdleAgentsCount` | Agents connected but not running a job.
+`BusyAgentsCount` | Agents currently running a job.
+`TotalAgentsCount` | Total number of connected agents.
+`BusyAgentPercentage` | Percentage of agents currently busy.
+{: class="responsive-table"}
+
+For more details on configuration options, AWS Lambda deployment, and backend-specific settings, see the [buildkite-agent-metrics README](https://github.com/buildkite/buildkite-agent-metrics).
+
 ## Tracing
 
 For Datadog APM or OpenTelemetry tracing, see [Tracing in the Buildkite agent](/docs/agent/self-hosted/monitoring-and-observability/tracing).
