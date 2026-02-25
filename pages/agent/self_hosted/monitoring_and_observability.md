@@ -133,7 +133,7 @@ The tool supports the following backends:
 - [AWS CloudWatch](https://aws.amazon.com/cloudwatch/) (default)
 - [StatsD](https://github.com/etsy/statsd) (including Datadog-compatible tagging)
 - [Prometheus](https://prometheus.io)
-- [Stackdriver](https://cloud.google.com/stackdriver/)
+- [Google Cloud Monitoring](https://cloud.google.com/monitoring)
 - [New Relic](https://newrelic.com/products/insights)
 - [OpenTelemetry](https://opentelemetry.io)
 
@@ -182,7 +182,7 @@ Metric    | Description
 --------- | ---
 `ScheduledJobsCount` | Jobs waiting in the queue for an available agent. Should be close to zero if you have sufficient agent capacity.
 `RunningJobsCount` | Jobs currently being executed by agents.
-`WaitingJobsCount` | Jobs that aren't schedulable yet due to dependencies or `wait` steps. Useful for auto-scaling, as these represent work that starts soon.
+`WaitingJobsCount` | Jobs that can't be scheduled yet due to dependencies or `wait` steps. Useful for auto-scaling, as these represent work that starts soon.
 `UnfinishedJobsCount` | All jobs that have been scheduled but haven't finished. Includes both running and scheduled jobs.
 `IdleAgentsCount` | Agents connected but not running a job.
 `BusyAgentsCount` | Agents currently running a job.
