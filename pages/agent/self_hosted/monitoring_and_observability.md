@@ -126,7 +126,7 @@ Once enabled, the agent will generate the following metrics (duration measured i
 
 ## Buildkite agent metrics CLI
 
-The [buildkite-agent-metrics](https://github.com/buildkite/buildkite-agent-metrics) tool is a standalone command-line binary that collects agent and job metrics from the [Buildkite Agent API](/docs/apis/agent-api/metrics) and publishes them to a metrics backend of your choice. It's particularly useful for enabling auto-scaling based on queue depth and agent availability.
+The [buildkite-agent-metrics](https://github.com/buildkite/buildkite-agent-metrics) tool is a standalone command-line binary that collects agent and job metrics from the [Buildkite Agent API](/docs/apis/agent-api/metrics) and publishes them to a metrics backend of your choice. It's particularly useful for enabling autoscaling based on queue depth and agent availability.
 
 The tool supports the following backends:
 
