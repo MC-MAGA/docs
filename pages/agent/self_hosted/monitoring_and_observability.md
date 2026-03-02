@@ -156,7 +156,7 @@ go install github.com/buildkite/buildkite-agent-metrics/v5@latest
 
 ### Running
 
-The tool requires an [agent token](/docs/agent/self-hosted/tokens), which would have been the one used when [assigning the self-hosted agent to a queue](/docs/agent/queues#assigning-a-self-hosted-agent-to-a-queue). The simplest deployment runs it as a long-running daemon that collects metrics across all queues in an organization:
+The tool requires an [agent token](/docs/agent/self-hosted/tokens), which could be the same one used when [assigning the self-hosted agent to a queue](/docs/agent/queues#assigning-a-self-hosted-agent-to-a-queue), or another agent token configured within the same [cluster](/docs/pipelines/security/clusters). The simplest deployment runs it as a long-running daemon that collects metrics across all queues in an organization:
 
 ```shell
 buildkite-agent-metrics -token "$BUILDKITE_AGENT_TOKEN" -interval 30s
