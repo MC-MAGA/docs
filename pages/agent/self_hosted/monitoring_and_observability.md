@@ -182,7 +182,7 @@ Metric    | Description
 --------- | ---
 `ScheduledJobsCount` | Jobs waiting in the queue for an available agent. This should be close to zero if you have sufficient agent capacity.
 `RunningJobsCount` | Jobs currently being executed by agents.
-`WaitingJobsCount` | Jobs that can't be scheduled yet due to dependencies or `wait` steps. Useful for auto-scaling, as these represent work that starts soon.
+`WaitingJobsCount` | Jobs that can't be scheduled yet due to dependencies or `wait` steps. Useful for autoscaling, as these represent work that starts soon.
 `UnfinishedJobsCount` | All jobs that have been scheduled but haven't finished. Includes both running and scheduled jobs.
 `IdleAgentsCount` | Agents connected but not running a job.
 `BusyAgentsCount` | Agents currently running a job.
