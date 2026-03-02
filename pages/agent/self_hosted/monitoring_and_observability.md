@@ -154,7 +154,6 @@ You can also install from source using Go:
 go install github.com/buildkite/buildkite-agent-metrics/v5@latest
 ```
 
-Select Help and the Help page displays.
 
 ### Running
 
