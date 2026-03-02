@@ -154,6 +154,8 @@ You can also install from source using Go:
 go install github.com/buildkite/buildkite-agent-metrics/v5@latest
 ```
 
+Select Help and the Help page displays.
+
 ### Running
 
 The tool requires an [agent registration token](/docs/agent/self-hosted/configure#token) or [cluster token](/docs/agent/queues#assigning-a-self-hosted-agent-to-a-queue). The simplest deployment runs it as a long-running daemon that collects metrics across all queues in an organization:
